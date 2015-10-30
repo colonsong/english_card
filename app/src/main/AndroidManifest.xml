@@ -18,6 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- 關於應用程式的資訊 -->
+        <!-- 因為使用對話框的樣式，所以不用設定標題 -->
+        <activity
+            android:name=".CardOptionsActivity"
+            android:theme="@android:style/Theme.Dialog" />
     </application>
 
 </manifest>

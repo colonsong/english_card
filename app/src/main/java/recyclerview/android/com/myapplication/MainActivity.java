@@ -1,5 +1,7 @@
 package recyclerview.android.com.myapplication;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -20,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private LayoutInflater mInflater;
     private LinearLayout mGallery;
-
+    private View clickOptionsView;
     private int countText = 0;
 
     private String[] randomBgColor = {"#E91E63","#F44336","#9C27B0","#673AB7","#3F51B5","#2196F3","#03A9F4"
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private void initView()
     {
         mGallery = (LinearLayout) findViewById(R.id.main_linear_layout);
-        insertCard(getCardView(),0);
+        insertCard(getCardView(), 0);
 
         View submitView = mInflater.inflate(R.layout.v_submit,
                 mGallery, false);
@@ -59,20 +61,58 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    public void addCardByBtn(View v)
+    public void cardOptions(View v)
     {
-        //Toast.makeText(this.getApplication(), "+", Toast.LENGTH_SHORT).show();
-        //then to remove the last
-        LinearLayout addNoteLayout = (LinearLayout) ((LinearLayout)v.getParent()).getParent();
+        clickOptionsView = v;
+        Intent intent = new Intent(this, CardOptionsActivity.class);
+        // 呼叫「startActivity」，參數為一個建立好的Intent物件
+        // 這行敘述執行以後，如果沒有任何錯誤，就會啟動指定的元件
+        startActivityForResult(intent, 0);
+
+    }
+    public void addCard()
+    {
+
+        LinearLayout addNoteLayout = (LinearLayout) ((LinearLayout)clickOptionsView.getParent()).getParent();
 
         int totalIndex = mGallery.getChildCount();
         int addIndexLocation = mGallery.indexOfChild(addNoteLayout);
 
         countText++;
-        Log.v("＃＃＃＃", totalIndex  + "" + addIndexLocation);
+        Log.v("＃＃＃＃", totalIndex + "" + addIndexLocation);
         insertCard(getCardView(), addIndexLocation + 1);
 
+
+
+
+    }
+
+    public void removeCard()
+    {
+        LinearLayout addNoteLayout = (LinearLayout) ((LinearLayout)clickOptionsView.getParent()).getParent();
+        addNoteLayout.removeAllViews();
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        Log.v("TAG","@@");
+        // 如果被啟動的Activity元件傳回確定的結果
+
+            if (resultCode == Activity.RESULT_OK) {
+                // 讀取標題
+                String action = data.getStringExtra("action");
+
+                if(action.equals("add"))
+                {
+                    addCard();
+                }
+                else
+                {
+                    removeCard();
+                }
+            }
 
 
     }
@@ -95,11 +135,7 @@ public class MainActivity extends AppCompatActivity {
         edText.setBackgroundColor(Color.parseColor(colorStr));
         edText.setText(countText+"");
 
-        EditText edText2 = (EditText) view.findViewById(R.id.editText2);
-        edText2.setBackgroundColor(Color.parseColor(colorStr));
 
-        EditText edText3 = (EditText) view.findViewById(R.id.editText3);
-        edText3.setBackgroundColor(Color.parseColor(colorStr));
 
        // Button insertButton = (Button) view.findViewById(R.id.add_v_card_btn);
 

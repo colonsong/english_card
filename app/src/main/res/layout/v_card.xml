@@ -22,25 +22,7 @@
 
             android:background="#3F51B5"/>
 
-        <EditText
-            android:id="@+id/editText2"
-            android:layout_width="200dp"
-            android:layout_height="50dp"
-            android:padding="10px"
-            android:layout_margin="10px"
-            android:textColor="#FFF"
-            android:inputType="text"
-            android:background="#3F51B5"/>
 
-        <EditText
-            android:id="@+id/editText3"
-            android:layout_width="200dp"
-            android:layout_height="50dp"
-            android:padding="10px"
-            android:layout_margin="10px"
-            android:inputType="text"
-            android:textColor="#FFF"
-            android:background="#3F51B5"/>
 
 
     </LinearLayout>
@@ -59,7 +41,7 @@
             android:textAlignment="center"
             android:layout_margin="10px"
             android:id="@+id/add_v_card_btn"
-            android:onClick="addCardByBtn"
+            android:onClick="cardOptions"
             android:textColor="#FFF"
             android:background="#f50057"
             />
