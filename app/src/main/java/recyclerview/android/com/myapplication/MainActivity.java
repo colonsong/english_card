@@ -16,7 +16,13 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import com.facebook.stetho.Stetho;
+
+import java.util.List;
 import java.util.Random;
+
+import recyclerview.android.com.myapplication.sql.Card;
+import recyclerview.android.com.myapplication.sql.CardDAO;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,7 +30,10 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mGallery;
     private View clickOptionsView;
     private int countText = 0;
-
+    private CardDAO cardDAO;
+    // 儲存所有記事本的List物件
+    private List<Card> cards;
+    private final String TAG = "MainActivity";
     private String[] randomBgColor = {"#E91E63","#F44336","#9C27B0","#673AB7","#3F51B5","#2196F3","#03A9F4"
             ,"#00BCD4","#009688","#4CAF50","#8BC34A","#CDDC39","#FFEB3B","#FFC107","#FF9800","#607D8B"};
 
@@ -45,7 +54,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // 建立資料庫物件
+        cardDAO = new CardDAO(getApplicationContext());
+
+        // 如果資料庫是空的，就建立一些範例資料
+        // 這是為了方便測試用的，完成應用程式以後可以拿掉
+        if (cardDAO.getCount() == 0) {
+            cardDAO.sample();
+        }
+
+        // 取得所有記事資料
+        cards = cardDAO.getAll();
+        Log.d(TAG,cards.toString());
+
         initView();
+        Stetho.initializeWithDefaults(this);
     }
 
     private void initView()
