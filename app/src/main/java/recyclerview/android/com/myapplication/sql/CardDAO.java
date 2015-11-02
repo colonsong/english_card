@@ -100,7 +100,13 @@ public class CardDAO {
         // 設定條件為編號，格式為「欄位名稱=資料」
         String where = KEY_ID + "=" + id;
         // 刪除指定編號資料並回傳刪除是否成功
-        return db.delete(TABLE_NAME, where , null) > 0;
+        return db.delete(TABLE_NAME, where, null) > 0;
+    }
+
+    // 刪除參數指定編號的資料
+    public boolean deleteAll(){
+        // 刪除指定編號資料並回傳刪除是否成功
+        return db.delete(TABLE_NAME, null , null) > 0;
     }
 
     // 讀取所有記事資料
@@ -108,6 +114,25 @@ public class CardDAO {
         List<Card> result = new ArrayList<>();
         Cursor cursor = db.query(
                 TABLE_NAME, null, null, null, null, null, null, null);
+
+        while (cursor.moveToNext()) {
+            Card c = getRecord(cursor);
+            result.add(c);
+        }
+
+        cursor.close();
+        return result;
+    }
+
+    // 取得指定編號的資料物件
+    public List<Card> getCard(int cardID,int depth) {
+        // 準備回傳結果用的物件
+        List<Card> result = new ArrayList<>();
+        // 使用編號為查詢條件
+        String where = CARDID_COLUMN + "=" + cardID + " AND " + DEPTH_COLUMN + "=" + depth;
+        // 執行查詢
+        Cursor cursor = db.query(
+                TABLE_NAME, null, where, null, null, null, null, null);
 
         while (cursor.moveToNext()) {
             Card c = getRecord(cursor);
@@ -175,13 +200,17 @@ public class CardDAO {
          *  Card(long id, long datetime, String word,
          long lastModify,int depth,long cardID) {
          */
-        Card item  = new Card(0, new Date().getTime(), "大方形", 0, 0,0);
-        Card item2 = new Card(0, new Date().getTime(), "有四腳", 0, 0,0);
-        Card item3 = new Card(0, new Date().getTime(), "布", 0, 0,0);
+        Card card0Item0  = new Card(0, new Date().getTime(), "大方形", 0, 0,0);
+        Card card0Item1 = new Card(0, new Date().getTime(), "有四腳", 0, 0,0);
+        Card card0Item2 = new Card(0, new Date().getTime(), "布", 0, 0,0);
 
-        insert(item);
-        insert(item2);
-        insert(item3);
+        insert(card0Item0);
+        insert(card0Item1);
+        insert(card0Item2);
+
+        Card card1Item0  = new Card(0, new Date().getTime(), "Windows", 0, 1,0);
+        insert(card1Item0);
+
 
 
     }

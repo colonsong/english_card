@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 
 import com.facebook.stetho.Stetho;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -59,13 +60,12 @@ public class MainActivity extends AppCompatActivity {
 
         // 如果資料庫是空的，就建立一些範例資料
         // 這是為了方便測試用的，完成應用程式以後可以拿掉
+        cardDAO.deleteAll();
         if (cardDAO.getCount() == 0) {
             cardDAO.sample();
         }
 
-        // 取得所有記事資料
-        cards = cardDAO.getAll();
-        Log.d(TAG,cards.toString());
+
 
         initView();
         Stetho.initializeWithDefaults(this);
@@ -74,12 +74,63 @@ public class MainActivity extends AppCompatActivity {
     private void initView()
     {
         mGallery = (LinearLayout) findViewById(R.id.main_linear_layout);
-        insertCard(getCardView(), 0);
+        // 取得所有記事資料
+        int depth = 0;
+       while(true)
+       {
+           cards = cardDAO.getCard(0, depth);
+           if(cards.size() == 0)
+           {
+               break;
+           }
+           insertCard(getCardView(), depth);
+           addCardItem(depth, cards);
+           depth++;
+       }
+
+
+
+
+
+
+
+
 
         View submitView = mInflater.inflate(R.layout.v_submit,
                 mGallery, false);
 
         mGallery.addView(submitView);
+
+
+    }
+
+    public void addCardItem(int depth,List<Card> cards)
+    {
+
+
+
+
+        mGallery.getChildCount();
+        LinearLayout view =   (LinearLayout) mGallery.getChildAt(depth);
+        LinearLayout editLayout =  (LinearLayout) view.findViewById(R.id.editLayout);
+        editLayout.removeAllViews();
+        Iterator<Card> iterator = cards.iterator();
+        while (iterator.hasNext()) {
+            Card card = iterator.next();
+
+            EditText edText = (EditText) mInflater.inflate(R.layout.card_item,mGallery, false);
+            edText.setText(card.getWord());
+            editLayout.addView(edText);
+        }
+
+
+
+
+
+
+
+
+
 
     }
 
@@ -140,10 +191,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void insertCard(View v,int cardIndex)
+    public void insertCard(View v,int depth)
     {
 
-        mGallery.addView(v,cardIndex);
+        mGallery.addView(v,depth);
     }
 
     public View getCardView()
