@@ -4,7 +4,7 @@ public class Card implements java.io.Serializable {
 
     // 編號、日期時間、顏色、標題、內容、檔案名稱、經緯度、修改、已選擇
     private long id;
-    private long cardID;
+    private long card_id;
     private long datetime;
 
     private String word;
@@ -23,17 +23,17 @@ public class Card implements java.io.Serializable {
         this.depth = depth;
         this.word = word;
         this.lastModify = lastModify;
-        this.cardID =  cardID;
+        this.card_id =  cardID;
     }
 
     public long getCardID()
     {
-        return cardID;
+        return card_id;
     }
 
-    public long setCardID()
+    public void setCardID(int cardID)
     {
-        return cardID;
+         this.card_id = cardID;
     }
 
     public long getId() {

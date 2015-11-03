@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,7 +19,7 @@ public class CardDAO {
 
     // 編號表格欄位名稱，固定不變
     public static final String KEY_ID = "_id";
-
+    public static final String TAG = "CardDAO";
     // 其它表格欄位名稱
     public static final String DATETIME_COLUMN = "datetime";
     public static final String WORD_COLUMN = "word";
@@ -125,11 +126,11 @@ public class CardDAO {
     }
 
     // 取得指定編號的資料物件
-    public List<Card> getCard(int cardID,int depth) {
+    public List<Card> getCard(int cardId,int depth) {
         // 準備回傳結果用的物件
         List<Card> result = new ArrayList<>();
         // 使用編號為查詢條件
-        String where = CARDID_COLUMN + "=" + cardID + " AND " + DEPTH_COLUMN + "=" + depth;
+        String where = CARDID_COLUMN + "=" + cardId + " AND " + DEPTH_COLUMN + "=" + depth;
         // 執行查詢
         Cursor cursor = db.query(
                 TABLE_NAME, null, where, null, null, null, null, null);
@@ -141,6 +142,40 @@ public class CardDAO {
 
         cursor.close();
         return result;
+    }
+
+
+
+    public int getNewCardID()
+    {
+        // 準備回傳結果用的物件
+        Card item = null;
+        // 使用編號為查詢條件
+        String orderBy = CARDID_COLUMN + " DESC ";
+        // 執行查詢
+        Cursor result = db.query(
+                TABLE_NAME, null, null, null, null, null, orderBy, null);
+
+        // 如果有查詢結果
+
+        if (result.moveToFirst()) {
+            // 讀取包裝一筆資料的物件
+            item = getRecord(result);            Log.d(TAG,"@@ cardID:" + item.getId()  );
+        }
+
+        // 關閉Cursor物件
+        result.close();
+
+        // 回傳結果
+        if(item != null)
+        {
+            return (int)item.getCardID() +1 ;
+        }
+        else
+        {
+            return 0;
+        }
+
     }
 
     // 取得指定編號的資料物件
@@ -172,12 +207,23 @@ public class CardDAO {
 
         result.setId(cursor.getLong(0));
         result.setDatetime(cursor.getLong(4));
-
+        result.setCardID(cursor.getInt(1));
         result.setWord(cursor.getString(3));
         result.setDepth(cursor.getInt(2));
         result.setLastModify(cursor.getLong(5));
 
         // 回傳結果
+        return result;
+    }
+    public int getTotalCountByDepth(int depth)
+    {
+        int result = 0;
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE " + DEPTH_COLUMN + " = " + depth + " group by " + CARDID_COLUMN, null);
+
+        if (cursor.moveToNext()) {
+            result = cursor.getInt(0);
+        }
+
         return result;
     }
 

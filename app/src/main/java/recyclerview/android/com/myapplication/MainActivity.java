@@ -20,6 +20,7 @@ import android.widget.LinearLayout;
 
 import com.facebook.stetho.Stetho;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private CardDAO cardDAO;
     // 儲存所有記事本的List物件
     private List<Card> cards;
+    private int cardID = 10;
     private final String TAG = "MainActivity";
     private String[] randomBgColor = {"#E91E63","#F44336","#9C27B0","#673AB7","#3F51B5","#2196F3","#03A9F4"
             ,"#00BCD4","#009688","#4CAF50","#8BC34A","#CDDC39","#FFEB3B","#FFC107","#FF9800","#607D8B"};
@@ -101,9 +103,45 @@ public class MainActivity extends AppCompatActivity {
         View submitView = mInflater.inflate(R.layout.v_submit,
                 mGallery, false);
 
+
         mGallery.addView(submitView);
 
 
+    }
+
+    public void setCardBtn(View v)
+    {
+        int totalDepth = mGallery.getChildCount();
+        //不算submit view
+        totalDepth--;
+        int cardID = cardDAO.getNewCardID();
+        for(int depth=0;depth<totalDepth; depth++)
+        {
+            LinearLayout cardLayout = (LinearLayout) mGallery.getChildAt(depth);
+            LinearLayout editLayout = (LinearLayout) cardLayout.findViewById(R.id.editLayout);
+            int editTotalDepth = editLayout.getChildCount();
+            for(int editDepth = 0; editDepth<editTotalDepth; editDepth++)
+            {
+                EditText editText = (EditText) editLayout.getChildAt(editDepth);
+                String editTextStr = editText.getText().toString();
+                if(!editTextStr.equals(""))
+                {
+                    Card card = new Card();
+                    card.setCardID(cardID);
+                    card.setWord(editTextStr);
+                    card.setDatetime(new Date().getTime());
+                    card.setLastModify(0);
+                    card.setDepth(depth);
+
+                    //儲存DB
+                    cardDAO.insert(card);
+
+
+                }
+
+            }
+
+        }
     }
 
     public void addCardItemBtn()
@@ -112,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout editLayout = (LinearLayout)linearLayout.findViewById(R.id.editLayout);
         EditText editText = (EditText)editLayout.findViewById(R.id.editText1);
         String bgColor;
+        //保持同一張卡同一個顏色
         if(editText != null)
         {
              int colorInt = ((ColorDrawable) editText.getBackground()).getColor();
@@ -200,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
         insertCard(getCardView(), addIndexLocation + 1);
 
         Card card = new Card();
-        card.setCardID();
+        card.setCardID(0);
         card.setWord("");
         cards.clear();
         cards.add(card);
