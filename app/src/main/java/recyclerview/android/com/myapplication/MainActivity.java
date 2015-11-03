@@ -3,6 +3,7 @@ package recyclerview.android.com.myapplication;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
@@ -104,6 +106,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void addCardItemBtn()
+    {
+        LinearLayout linearLayout = (LinearLayout) ((LinearLayout)clickOptionsView.getParent()).getParent();
+        LinearLayout editLayout = (LinearLayout)linearLayout.findViewById(R.id.editLayout);
+        EditText editText = (EditText)editLayout.findViewById(R.id.editText1);
+        String bgColor;
+        if(editText != null)
+        {
+             int colorInt = ((ColorDrawable) editText.getBackground()).getColor();
+             bgColor = String.format("#%06X", (0xFFFFFF & colorInt));
+        }
+        else {
+            bgColor = randomBgColor[new Random().nextInt(randomBgColor.length)];
+        }
+        addCardEditText(null, bgColor, editLayout);
+
+    }
+
     public void addCardItem(int depth,List<Card> cards)
     {
 
@@ -115,12 +135,16 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout editLayout =  (LinearLayout) view.findViewById(R.id.editLayout);
         editLayout.removeAllViews();
         Iterator<Card> iterator = cards.iterator();
+        String colorStr = randomBgColor[new Random().nextInt(randomBgColor.length)];
         while (iterator.hasNext()) {
             Card card = iterator.next();
 
-            EditText edText = (EditText) mInflater.inflate(R.layout.card_item,mGallery, false);
-            edText.setText(card.getWord());
-            editLayout.addView(edText);
+            addCardEditText(card,colorStr,editLayout);
+
+
+
+
+
         }
 
 
@@ -132,6 +156,25 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    }
+
+    public void addCardEditText(Card card,String colorStr,LinearLayout editLayout)
+    {
+        EditText edText = (EditText) mInflater.inflate(R.layout.card_item,mGallery, false);
+        if(card != null) {
+            edText.setText(card.getWord());
+        }
+        edText.setBackgroundColor(Color.parseColor(colorStr));
+
+        editLayout.addView(edText);
+        edText.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                removeCardItem(v);
+                return true;
+            }
+        });
     }
 
 
@@ -155,6 +198,13 @@ public class MainActivity extends AppCompatActivity {
         countText++;
         Log.v("＃＃＃＃", totalIndex + "" + addIndexLocation);
         insertCard(getCardView(), addIndexLocation + 1);
+
+        Card card = new Card();
+        card.setCardID();
+        card.setWord("");
+        cards.clear();
+        cards.add(card);
+        addCardItem((addIndexLocation +1), cards);
 
 
 
@@ -182,6 +232,10 @@ public class MainActivity extends AppCompatActivity {
                 {
                     addCard();
                 }
+                else if(action.equals("addCardItem"))
+                {
+                    addCardItemBtn();
+                }
                 else
                 {
                     removeCard();
@@ -194,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
     public void insertCard(View v,int depth)
     {
 
-        mGallery.addView(v,depth);
+        mGallery.addView(v, depth);
     }
 
     public View getCardView()
@@ -203,11 +257,7 @@ public class MainActivity extends AppCompatActivity {
         View view = mInflater.inflate(R.layout.v_card,
                 mGallery, false);
 
-        String colorStr = randomBgColor[new Random().nextInt(randomBgColor.length)];
 
-        EditText edText = (EditText) view.findViewById(R.id.editText1);
-        edText.setBackgroundColor(Color.parseColor(colorStr));
-        edText.setText(countText+"");
 
 
 
@@ -215,6 +265,22 @@ public class MainActivity extends AppCompatActivity {
 
 
         return view;
+
+    }
+
+    public void removeCardItem(View v)
+    {
+        ViewGroup parent = (ViewGroup) v.getParent();
+        LinearLayout linearLayout = (LinearLayout) parent.getParent();
+        clickOptionsView = linearLayout.findViewById(R.id.add_v_card_btn);
+        if(parent.getChildCount() == 1)
+        {
+           removeCard();
+        }
+        else
+        {
+            parent.removeView(v);
+        }
 
     }
 

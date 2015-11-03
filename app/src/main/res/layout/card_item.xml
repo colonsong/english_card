@@ -9,6 +9,6 @@
     android:textColor="#FFF"
     android:layout_margin="10px"
 
-
+    android:longClickable="true"
     android:background="#3F51B5"
     xmlns:android="http://schemas.android.com/apk/res/android" />

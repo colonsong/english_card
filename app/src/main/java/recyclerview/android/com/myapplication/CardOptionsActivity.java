@@ -34,6 +34,16 @@ public class CardOptionsActivity extends Activity {
             setResult(Activity.RESULT_OK, result);
 
         }
+        else if(view.getId() == R.id.addCardItem)
+        {
+            // 取得回傳資料用的Intent物件
+            Intent result = getIntent();
+            // 設定標題與內容
+            result.putExtra("action", "addCardItem");
+
+// 設定回應結果為確定
+            setResult(Activity.RESULT_OK, result);
+        }
         else
         {
             // 取得回傳資料用的Intent物件

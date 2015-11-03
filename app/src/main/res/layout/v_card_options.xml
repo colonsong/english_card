@@ -30,4 +30,24 @@
         android:text="移除這張關係卡"
         android:onClick="action" />
 
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/addCardItem"
+
+        android:text="新增關係卡單字"
+        android:onClick="action" />
+
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+
+
+        android:text="移除請長按該單字"
+        android:clickable="false" />
+
 </LinearLayout>
