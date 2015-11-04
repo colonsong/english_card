@@ -74,7 +74,12 @@ public class CardDAO {
         // 回傳結果
         return item;
     }
+    public boolean removeAllByCardId(int cardId)
+    {
 
+        String where = CARDID_COLUMN + "=" + cardId;
+        return db.delete(TABLE_NAME, where , null) > 0;
+    }
     // 修改參數指定的物件
     public boolean update(Card item) {
         // 建立準備修改資料的ContentValues物件
@@ -119,6 +124,25 @@ public class CardDAO {
         while (cursor.moveToNext()) {
             Card c = getRecord(cursor);
             result.add(c);
+        }
+
+        cursor.close();
+        return result;
+    }
+
+    public List<Integer> getCardIdList()
+    {
+
+        List<Integer> result = new ArrayList<>();
+        // 使用編號為查詢條件
+        String groupBy = CARDID_COLUMN;
+        // 執行查詢
+        Cursor cursor = db.query(
+                TABLE_NAME, null, null, null, groupBy, null, null, null);
+
+        while (cursor.moveToNext()) {
+            result.add( cursor.getInt(1));
+
         }
 
         cursor.close();
@@ -215,13 +239,13 @@ public class CardDAO {
         // 回傳結果
         return result;
     }
-    public int getTotalCountByDepth(int depth)
+    public int getTotalCountByCardId(int depth)
     {
         int result = 0;
-        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE " + DEPTH_COLUMN + " = " + depth + " group by " + CARDID_COLUMN, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + DEPTH_COLUMN + " = " + depth + " group by " + CARDID_COLUMN, null);
 
         if (cursor.moveToNext()) {
-            result = cursor.getInt(0);
+            result = cursor.getCount();
         }
 
         return result;

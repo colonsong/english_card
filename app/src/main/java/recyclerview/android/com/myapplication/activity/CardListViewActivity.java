@@ -1,19 +1,27 @@
 package recyclerview.android.com.myapplication.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.facebook.stetho.Stetho;
+
 import java.util.Iterator;
 import java.util.List;
 
+import recyclerview.android.com.myapplication.MainActivity;
 import recyclerview.android.com.myapplication.R;
 import recyclerview.android.com.myapplication.sql.Card;
 import recyclerview.android.com.myapplication.sql.CardDAO;
@@ -22,17 +30,79 @@ public class CardListViewActivity extends AppCompatActivity {
     private CardAdapter mCardAdapter;
     private CardDAO cardDAO;
     private LayoutInflater mInflater;
-    private ListView cardList;
+
+    private List<Integer> cardIdList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.card_list_view);
-        mInflater = LayoutInflater.from(this);
-        cardList = (ListView)findViewById(R.id.cardListView);
-        cardDAO = new CardDAO(getApplicationContext());
 
-        mCardAdapter = new CardAdapter(this, R.layout.card_lsit_view_item, cardDAO);
-        cardList.setAdapter(mCardAdapter);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        mInflater = LayoutInflater.from(this);
+
+
+
+
+
+
+
+
+        mInflater = LayoutInflater.from(this);
+        ListView cardListView = (ListView)findViewById(R.id.cardListView);
+        cardDAO = new CardDAO(getApplicationContext());
+        cardIdList = cardDAO.getCardIdList();
+        if (cardDAO.getCount() == 0) {
+            cardDAO.sample();
+        }
+        Stetho.initializeWithDefaults(this);
+
+        mCardAdapter = new CardAdapter(this, R.layout.card_lsit_view_item, cardDAO,cardIdList);
+        cardListView.setAdapter(mCardAdapter);
+        cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent();
+                intent.setClass(CardListViewActivity.this, MainActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("position", cardIdList.get(position));
+                bundle.putString("action", "editCard");
+                intent.putExtras(bundle);
+                startActivity(intent);
+
+            }
+        });
+    }
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+
+        mCardAdapter.notifyDataSetChanged();
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
     public class CardAdapter extends BaseAdapter {
 
@@ -41,28 +111,30 @@ public class CardListViewActivity extends AppCompatActivity {
         // 包裝的記事資料
         private CardDAO cardDAO;
         private List<Card> cards;
+        private List<Integer> cardIdList;
         private Context mContext;
-        private int totalCount;
 
-        public CardAdapter(Context context, int resource, CardDAO cardDAO) {
+
+        public CardAdapter(Context context, int resource, CardDAO cardDAO , List<Integer> cardIdList) {
 
             this.mContext = context;
             this.cardDAO = cardDAO;
             this.resource = resource;
-            totalCount = cardDAO.getTotalCountByDepth(0);
+            this.cardIdList = cardIdList;
+
 
         }
 
         @Override
         public int getCount() {
-            return totalCount;
+            return cardDAO.getTotalCountByCardId(0);
         }
 
         @Override
         public List<Card> getItem(int position) {
 
 
-            return cardDAO.getCard(position,0);
+            return cardDAO.getCard(cardIdList.get(position),0);
         }
 
         @Override
@@ -115,6 +187,19 @@ public class CardListViewActivity extends AppCompatActivity {
 
 
     }
+
+    public void addCardBtn(View v)
+    {
+        Intent intent = new Intent();
+        intent.setClass(CardListViewActivity.this, MainActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putInt("position", cardDAO.getNewCardID());
+        bundle.putString("action", "newCard");
+        intent.putExtras(bundle);
+        startActivity(intent);
+
+    }
+
 }
 
 

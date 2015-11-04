@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,13 +17,13 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
-import com.facebook.stetho.Stetho;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import recyclerview.android.com.myapplication.activity.CardListViewActivity;
 import recyclerview.android.com.myapplication.sql.Card;
 import recyclerview.android.com.myapplication.sql.CardDAO;
 
@@ -37,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private CardDAO cardDAO;
     // 儲存所有記事本的List物件
     private List<Card> cards;
-    private int cardID = 10;
+    private String intentAction;
+    private int cardID = 0;
     private final String TAG = "MainActivity";
     private String[] randomBgColor = {"#E91E63","#F44336","#9C27B0","#673AB7","#3F51B5","#2196F3","#03A9F4"
             ,"#00BCD4","#009688","#4CAF50","#8BC34A","#CDDC39","#FFEB3B","#FFC107","#FF9800","#607D8B"};
@@ -47,8 +47,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mInflater = LayoutInflater.from(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -59,46 +58,54 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Intent in = this.getIntent();
+        cardID = in.getIntExtra("position",0);
+        intentAction = in.getStringExtra("action");
+
         // 建立資料庫物件
         cardDAO = new CardDAO(getApplicationContext());
 
         // 如果資料庫是空的，就建立一些範例資料
         // 這是為了方便測試用的，完成應用程式以後可以拿掉
-        cardDAO.deleteAll();
-        if (cardDAO.getCount() == 0) {
-            cardDAO.sample();
-        }
+        //cardDAO.deleteAll();
+
 
 
 
         initView();
-        Stetho.initializeWithDefaults(this);
+
     }
 
     private void initView()
     {
         mGallery = (LinearLayout) findViewById(R.id.main_linear_layout);
-        // 取得所有記事資料
-        int depth = 0;
-       while(true)
-       {
-           cards = cardDAO.getCard(0, depth);
-           if(cards.size() == 0)
-           {
-               break;
-           }
-           insertCard(getCardView(), depth);
-           addCardItem(depth, cards);
-           depth++;
-       }
+        cards = new ArrayList<>();
+        if( intentAction.equals("newCard"))
+        {
+            View vCardView = mInflater.inflate(R.layout.v_card,
+                    mGallery, false);
+            View vCardItem = mInflater.inflate(R.layout.card_item,mGallery,false);
+            LinearLayout editLayout =(LinearLayout) vCardView.findViewById(R.id.editLayout);
+            editLayout.addView(vCardItem);
 
-
-
-
-
-
-
-
+            mGallery.addView(vCardView);
+        }
+        else
+        {
+            // 取得所有記事資料
+            int depth = 0;
+            while(true)
+            {
+                cards = cardDAO.getCard(cardID, depth);
+                if(cards.size() == 0)
+                {
+                    break;
+                }
+                insertCard(getCardView(), depth);
+                addCardItem(depth, cards);
+                depth++;
+            }
+        }
 
         View submitView = mInflater.inflate(R.layout.v_submit,
                 mGallery, false);
@@ -111,10 +118,19 @@ public class MainActivity extends AppCompatActivity {
 
     public void setCardBtn(View v)
     {
+        //儲存DB
+        if(intentAction.equals("editCard"))
+        {
+            cardDAO.removeAllByCardId(cardID);
+        }
+        else
+        {
+            cardID = cardDAO.getNewCardID();
+        }
         int totalDepth = mGallery.getChildCount();
         //不算submit view
         totalDepth--;
-        int cardID = cardDAO.getNewCardID();
+
         for(int depth=0;depth<totalDepth; depth++)
         {
             LinearLayout cardLayout = (LinearLayout) mGallery.getChildAt(depth);
@@ -130,11 +146,15 @@ public class MainActivity extends AppCompatActivity {
                     card.setCardID(cardID);
                     card.setWord(editTextStr);
                     card.setDatetime(new Date().getTime());
-                    card.setLastModify(0);
+                    if(intentAction.equals("editCard")) {
+                        card.setLastModify(new Date().getTime());
+                    }
                     card.setDepth(depth);
 
                     //儲存DB
-                    cardDAO.insert(card);
+
+                        cardDAO.insert(card);
+
 
 
                 }
@@ -142,6 +162,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+        Intent intent = new Intent(this, CardListViewActivity.class);
+
+        startActivity(intent);
+
     }
 
     public void addCardItemBtn()
@@ -238,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
         Log.v("＃＃＃＃", totalIndex + "" + addIndexLocation);
         insertCard(getCardView(), addIndexLocation + 1);
 
+
         Card card = new Card();
         card.setCardID(0);
         card.setWord("");
@@ -253,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
     public void removeCard()
     {
         LinearLayout addNoteLayout = (LinearLayout) ((LinearLayout)clickOptionsView.getParent()).getParent();
-        addNoteLayout.removeAllViews();
+        mGallery.removeViewInLayout(addNoteLayout);
     }
 
 
