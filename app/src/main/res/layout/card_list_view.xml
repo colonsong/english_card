@@ -6,7 +6,7 @@ xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:fitsSystemWindows="true"
-tools:context="recyclerview.android.com.myapplication.activity.CardListViewActivity">
+tools:context="recyclerview.android.com.catchcard.activity.CardListViewActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_height="wrap_content"
@@ -33,6 +33,6 @@ tools:context="recyclerview.android.com.myapplication.activity.CardListViewActiv
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/btn_plus"/>
+        android:src="@android:drawable/ic_input_add"/>
 
 </android.support.design.widget.CoordinatorLayout>

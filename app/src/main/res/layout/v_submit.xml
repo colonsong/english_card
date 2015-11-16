@@ -8,8 +8,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="確認"
+        android:padding="20dp"
         android:id="@+id/setCardBtn"
         android:clickable="true"
+        android:textColor="#FFFFFF"
+        android:layout_margin="10dp"
         android:onClick="setCardBtn"
+        android:background="@drawable/card_submit_corners"
         android:layout_gravity="center_horizontal"/>
 </LinearLayout>
