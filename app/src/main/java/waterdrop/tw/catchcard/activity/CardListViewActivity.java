@@ -3,15 +3,21 @@ package waterdrop.tw.catchcard.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Checkable;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,6 +34,10 @@ public class CardListViewActivity extends AppCompatActivity {
     private CardAdapter mCardAdapter;
     private CardDAO cardDAO;
     private LayoutInflater mInflater;
+    private ListView cardListView;
+    private boolean selectedMenu = false;
+
+    public static final String TAG = "CardListViewActivity";
 
     private List<Integer> cardIdList;
 
@@ -37,19 +47,14 @@ public class CardListViewActivity extends AppCompatActivity {
         setContentView(R.layout.card_list_view);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
         setSupportActionBar(toolbar);
 
         mInflater = LayoutInflater.from(this);
 
+        cardListView = (ListView)findViewById(R.id.cardListView);
+        setSelectedMode();
 
-
-
-
-
-
-
-        mInflater = LayoutInflater.from(this);
-        ListView cardListView = (ListView)findViewById(R.id.cardListView);
         cardDAO = new CardDAO(getApplicationContext());
 
         if (cardDAO.getCount() == 0) {
@@ -59,6 +64,11 @@ public class CardListViewActivity extends AppCompatActivity {
         //Stetho.initializeWithDefaults(this);
 
         mCardAdapter = new CardAdapter(this, R.layout.card_lsit_view_item, cardDAO,cardIdList);
+
+
+
+        cardListView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+
         cardListView.setAdapter(mCardAdapter);
         cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -75,17 +85,90 @@ public class CardListViewActivity extends AppCompatActivity {
 
             }
         });
+
     }
+
+    private void setSelectedMode()
+    {
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addCardBtn);
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                selectedMenu = true;
+                Snackbar.make(v, "進入多選刪除模式", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                fab.setImageResource(R.drawable.ic_discuss);
+
+                cardListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+                cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+
+
+                        AbsListView list = (AbsListView) adapterView;
+
+                        SparseBooleanArray array = list.getCheckedItemPositions();
+
+
+                        Log.v(TAG, array.toString());
+
+
+                        for (int i = 0; i < array.size(); i++) {
+                            int key = array.keyAt(i);
+                            Log.v(TAG, "key: " + key);
+                            View getView = (View) cardListView.getChildAt(key);
+                            Log.v(TAG, "getkey :" + array.get(key) + "");
+                            if (array.get(key)) {
+                                //view.setBackgroundColor(Color.parseColor("#BBDEFB"));
+                                getView.setBackgroundResource(R.color.colorListSelected);
+                                //del
+                                Log.v(TAG, "del" + key + " TRUE @ " + array.get(key));
+                            } else {
+                                getView.setBackgroundColor(0);
+                                //view.setBackgroundColor(Color.GREEN);
+                                Log.v(TAG, "del" + key + " FALSE @ " + array.get(key));
+                            }
+
+                        }
+
+
+                    }
+                });
+                mCardAdapter.notifyDataSetChanged();
+                invalidateOptionsMenu();
+                return true;
+            }
+        });
+    }
+
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
 
         mCardAdapter.notifyDataSetChanged();
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        Log.v(TAG, "onPrepareOptionsMenu");
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        if(selectedMenu)
+        {
+            getMenuInflater().inflate(R.menu.selected_menu, menu);
+        }
+        else
+        {
+            getMenuInflater().inflate(R.menu.menu_main, menu);
+        }
+
+        Log.v(TAG, "onCreateOptionsMenu");
         return true;
     }
 
@@ -95,15 +178,68 @@ public class CardListViewActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        AbsListView list = (AbsListView) cardListView;
+        switch(id)
+        {
+            case R.id.cancel_selected_btn:
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+
+
+                SparseBooleanArray array = list.getCheckedItemPositions();
+
+
+                Log.v(TAG, array.toString());
+
+                for (int i = 0; i < array.size(); i++) {
+                    int key = array.keyAt(i);
+
+                    LinearLayout getView = (LinearLayout) cardListView.getChildAt(key);
+
+                    if (array.get(key)) {
+
+                        list.setItemChecked(key,false);
+
+                        getView.setBackgroundResource(0);
+
+                    }
+
+                }
+                break;
+
+            case R.id.del_selected_btn:
+
+
+                SparseBooleanArray array2 = list.getCheckedItemPositions();
+
+
+                Log.v(TAG, array2.toString());
+
+                for (int i = 0; i < array2.size(); i++) {
+                    int key = array2.keyAt(i);
+
+                    cardDAO.removeAllByCardId(cardIdList.get(key));
+
+
+
+
+
+
+
+                }
+                mCardAdapter.notifyDataSetChanged();
+
+
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+
         }
+        return true;
 
-        return super.onOptionsItemSelected(item);
+
+
     }
-    public class CardAdapter extends BaseAdapter {
+    public class CardAdapter extends BaseAdapter implements Checkable {
 
         // 畫面資源編號
         private int resource;
@@ -112,7 +248,7 @@ public class CardListViewActivity extends AppCompatActivity {
         private List<Card> cards;
         private List<Integer> cardIdList;
         private Context mContext;
-
+        boolean mChecked = false;
 
         public CardAdapter(Context context, int resource, CardDAO cardDAO , List<Integer> cardIdList) {
 
@@ -183,9 +319,30 @@ public class CardListViewActivity extends AppCompatActivity {
         }
 
 
+        @Override
+        public void setChecked(boolean c) {
+            mChecked = c;
+            if (mChecked) {
 
+            } else {
 
+            }
+        }
+
+        @Override
+        public boolean isChecked() {
+            return mChecked;
+        }
+
+        @Override
+        public void toggle() {
+            setChecked(!mChecked);
+        }
     }
+
+
+
+
 
     public void addCardBtn(View v)
     {

@@ -10,7 +10,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Medium Text"
         android:padding="10dp"
-
+        android:checkMark="@drawable/ic_done"
         android:id="@+id/cardTextView"
         android:layout_gravity="center_horizontal"/>
 </LinearLayout>

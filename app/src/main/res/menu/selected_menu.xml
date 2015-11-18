@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".MainActivity">
+
+
+    <item
+        android:id="@+id/cancel_selected_btn"
+        app:showAsAction="always"
+        android:title="CANCEL_SELECTED"
+        android:icon="@drawable/ic_event"
+
+        />
+
+    <item
+        android:id="@+id/del_selected_btn"
+        app:showAsAction="always"
+        android:title="DEL_SELECTED"
+        android:icon="@drawable/ic_forum"
+
+        />
+
+</menu>
