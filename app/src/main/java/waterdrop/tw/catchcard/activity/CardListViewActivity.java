@@ -95,48 +95,74 @@ public class CardListViewActivity extends AppCompatActivity {
 
             @Override
             public boolean onLongClick(View v) {
-                selectedMenu = true;
-                Snackbar.make(v, "進入多選刪除模式", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                fab.setImageResource(R.drawable.ic_discuss);
+                if(selectedMenu)
+                {
+                    selectedMenu = false;
 
-                cardListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
-                cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    fab.setImageResource(R.drawable.ic_new);
+                    cardListView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+                    cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-                    @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
 
+                            Intent intent = new Intent();
+                            intent.setClass(CardListViewActivity.this, MainActivity.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putInt("position", cardIdList.get(pos));
+                            bundle.putString("action", "editCard");
+                            intent.putExtras(bundle);
+                            startActivity(intent);
 
-                        AbsListView list = (AbsListView) adapterView;
-
-                        SparseBooleanArray array = list.getCheckedItemPositions();
-
-
-                        Log.v(TAG, array.toString());
-
-
-                        for (int i = 0; i < array.size(); i++) {
-                            int key = array.keyAt(i);
-                            Log.v(TAG, "key: " + key);
-                            View getView = (View) cardListView.getChildAt(key);
-                            Log.v(TAG, "getkey :" + array.get(key) + "");
-                            if (array.get(key)) {
-                                //view.setBackgroundColor(Color.parseColor("#BBDEFB"));
-                                getView.setBackgroundResource(R.color.colorListSelected);
-                                //del
-                                Log.v(TAG, "del" + key + " TRUE @ " + array.get(key));
-                            } else {
-                                getView.setBackgroundColor(0);
-                                //view.setBackgroundColor(Color.GREEN);
-                                Log.v(TAG, "del" + key + " FALSE @ " + array.get(key));
-                            }
 
                         }
+                    });
+                }
+                else {
+                    selectedMenu = true;
+                    Snackbar.make(v, "進入多選刪除模式", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    fab.setImageResource(R.drawable.ic_card_rotate);
+
+                    cardListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+                    cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
 
 
-                    }
-                });
-                mCardAdapter.notifyDataSetChanged();
+                            AbsListView list = (AbsListView) adapterView;
+
+                            SparseBooleanArray array = list.getCheckedItemPositions();
+
+
+                            Log.v(TAG, array.toString());
+
+
+                            for (int i = 0; i < array.size(); i++) {
+                                int key = array.keyAt(i);
+                                Log.v(TAG, "key: " + key);
+                                View getView = (View) cardListView.getChildAt(key);
+                                Log.v(TAG, "getkey :" + array.get(key) + "");
+                                if (array.get(key)) {
+                                    //view.setBackgroundColor(Color.parseColor("#BBDEFB"));
+                                    getView.setBackgroundResource(R.color.colorListSelected);
+                                    //del
+                                    Log.v(TAG, "del" + key + " TRUE @ " + array.get(key));
+                                } else {
+                                    getView.setBackgroundColor(0);
+                                    //view.setBackgroundColor(Color.GREEN);
+                                    Log.v(TAG, "del" + key + " FALSE @ " + array.get(key));
+                                }
+
+                            }
+
+
+                        }
+                    });
+                    mCardAdapter.notifyDataSetChanged();
+                }
+
                 invalidateOptionsMenu();
                 return true;
             }
@@ -188,7 +214,7 @@ public class CardListViewActivity extends AppCompatActivity {
                 SparseBooleanArray array = list.getCheckedItemPositions();
 
 
-                Log.v(TAG, array.toString());
+                Log.v(TAG, "cancel_selected_btn: " + array.toString());
 
                 for (int i = 0; i < array.size(); i++) {
                     int key = array.keyAt(i);
@@ -204,6 +230,7 @@ public class CardListViewActivity extends AppCompatActivity {
                     }
 
                 }
+                mCardAdapter.notifyDataSetChanged();
                 break;
 
             case R.id.del_selected_btn:
@@ -212,12 +239,13 @@ public class CardListViewActivity extends AppCompatActivity {
                 SparseBooleanArray array2 = list.getCheckedItemPositions();
 
 
-                Log.v(TAG, array2.toString());
+                Log.v(TAG, "del_selected_btn" + array2.toString());
 
                 for (int i = 0; i < array2.size(); i++) {
                     int key = array2.keyAt(i);
-
-                    cardDAO.removeAllByCardId(cardIdList.get(key));
+                    if (array2.get(key)) {
+                        cardDAO.removeAllByCardId(cardIdList.get(key));
+                    }
 
 
 

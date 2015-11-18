@@ -8,7 +8,7 @@
         android:id="@+id/cancel_selected_btn"
         app:showAsAction="always"
         android:title="CANCEL_SELECTED"
-        android:icon="@drawable/ic_event"
+        android:icon="@drawable/ic_undo"
 
         />
 
@@ -16,7 +16,7 @@
         android:id="@+id/del_selected_btn"
         app:showAsAction="always"
         android:title="DEL_SELECTED"
-        android:icon="@drawable/ic_forum"
+        android:icon="@drawable/ic_broom"
 
         />
 
