@@ -1,7 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context="recyclerview.android.com.catchcard.activity.CardListViewActivity">
+      tools:context=".activity.CardListViewActivity">
+    <item
+        android:id="@+id/upload_cards_btn"
+        app:showAsAction="always"
+        android:title="upload_cards"
+        android:icon="@drawable/ic_cloud"
+
+        />
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

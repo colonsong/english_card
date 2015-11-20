@@ -2,6 +2,8 @@ package waterdrop.tw.catchcard.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -22,6 +24,16 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,6 +48,8 @@ public class CardListViewActivity extends AppCompatActivity {
     private LayoutInflater mInflater;
     private ListView cardListView;
     private boolean selectedMenu = false;
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
 
     public static final String TAG = "CardListViewActivity";
 
@@ -95,8 +109,7 @@ public class CardListViewActivity extends AppCompatActivity {
 
             @Override
             public boolean onLongClick(View v) {
-                if(selectedMenu)
-                {
+                if (selectedMenu) {
                     selectedMenu = false;
 
                     fab.setImageResource(R.drawable.ic_new);
@@ -117,8 +130,7 @@ public class CardListViewActivity extends AppCompatActivity {
 
                         }
                     });
-                }
-                else {
+                } else {
                     selectedMenu = true;
                     Snackbar.make(v, "進入多選刪除模式", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
@@ -198,6 +210,27 @@ public class CardListViewActivity extends AppCompatActivity {
         return true;
     }
 
+    public String post(String url, String json) throws IOException {
+        RequestBody body = RequestBody.create(JSON, json);
+/*
+        RequestBody body = new FormEncodingBuilder()
+                .add("platform", "android")
+                .add("name", "bug")
+                .add("subject", "XXXXXXXXXXXXXXX")
+                .build();
+                */
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Response response = client.newCall(request).execute();
+        Log.v(TAG,response.body().string());
+        return response.body().string();
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -207,6 +240,27 @@ public class CardListViewActivity extends AppCompatActivity {
         AbsListView list = (AbsListView) cardListView;
         switch(id)
         {
+            case R.id.upload_cards_btn:
+                Log.v(TAG, "upload_cards_btn");
+
+
+
+                    new Thread(){
+                        public void run()
+                        {
+                            JSONArray dbJson = getResults();
+                            try {
+
+                                post("http://waterdrop.tw/mobile/get_card_json", dbJson.toString());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }}.start();
+
+
+
+
+                break;
             case R.id.cancel_selected_btn:
 
 
@@ -382,6 +436,57 @@ public class CardListViewActivity extends AppCompatActivity {
         intent.putExtras(bundle);
         startActivity(intent);
 
+    }
+
+
+    private JSONArray getResults()
+    {
+
+        String myPath = "/data/data/waterdrop.tw.catchcard/databases/card.db";// Set path to your database
+
+        String myTable = "card";//Set name of your table
+
+        SQLiteDatabase myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+
+        String searchQuery = "SELECT  * FROM " + myTable;
+        Cursor cursor = myDataBase.rawQuery(searchQuery, null );
+
+        JSONArray resultSet     = new JSONArray();
+
+        cursor.moveToFirst();
+        while (cursor.isAfterLast() == false) {
+
+            int totalColumn = cursor.getColumnCount();
+            JSONObject rowObject = new JSONObject();
+
+            for( int i=0 ;  i< totalColumn ; i++ )
+            {
+                if( cursor.getColumnName(i) != null )
+                {
+                    try
+                    {
+                        if( cursor.getString(i) != null )
+                        {
+                            Log.d("TAG_NAME", cursor.getString(i) );
+                            rowObject.put(cursor.getColumnName(i) ,  cursor.getString(i) );
+                        }
+                        else
+                        {
+                            rowObject.put( cursor.getColumnName(i) ,  "" );
+                        }
+                    }
+                    catch( Exception e )
+                    {
+                        Log.d("TAG_NAME", e.getMessage()  );
+                    }
+                }
+            }
+            resultSet.put(rowObject);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        Log.d("TAG_NAME", resultSet.toString() );
+        return resultSet;
     }
 
 }

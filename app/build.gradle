@@ -28,4 +28,7 @@ dependencies {
     //google db
     compile 'com.facebook.stetho:stetho:1.2.0'
     compile 'com.facebook.stetho:stetho-okhttp:1.2.0'
+    //http
+    compile 'com.squareup.okhttp:okhttp:2.5.0'
+
 }
