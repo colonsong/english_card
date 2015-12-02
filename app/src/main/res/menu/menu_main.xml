@@ -2,6 +2,16 @@
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
       tools:context=".activity.CardListViewActivity">
+
+    <item
+        android:id="@+id/download_cards_btn"
+        app:showAsAction="always"
+        android:title="download"
+        android:icon="@drawable/ic_cloud_download"
+
+        />
+
+
     <item
         android:id="@+id/upload_cards_btn"
         app:showAsAction="always"

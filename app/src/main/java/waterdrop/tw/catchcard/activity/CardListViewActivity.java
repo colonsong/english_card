@@ -1,9 +1,11 @@
 package waterdrop.tw.catchcard.activity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,6 +25,7 @@ import android.widget.Checkable;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -31,9 +34,12 @@ import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,6 +54,7 @@ public class CardListViewActivity extends AppCompatActivity {
     private LayoutInflater mInflater;
     private ListView cardListView;
     private boolean selectedMenu = false;
+    ProgressDialog dialog ;
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
 
@@ -210,6 +217,8 @@ public class CardListViewActivity extends AppCompatActivity {
         return true;
     }
 
+
+
     public String post(String url, String json) throws IOException {
         RequestBody body = RequestBody.create(JSON, json);
 /*
@@ -226,7 +235,8 @@ public class CardListViewActivity extends AppCompatActivity {
                 .post(body)
                 .build();
         Response response = client.newCall(request).execute();
-        Log.v(TAG,response.body().string());
+       // Log.v(TAG,response.body().string());
+
         return response.body().string();
     }
 
@@ -250,13 +260,24 @@ public class CardListViewActivity extends AppCompatActivity {
                         {
                             JSONArray dbJson = getResults();
                             try {
+                                Log.d(TAG,dbJson.toString());
+                                post("http://waterdrop.tw/mobile/set_card_json", dbJson.toString());
 
-                                post("http://waterdrop.tw/mobile/get_card_json", dbJson.toString());
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }}.start();
 
+
+
+
+                break;
+            case R.id.download_cards_btn:
+
+
+                dialog = ProgressDialog.show(this,
+                        "讀取中", "請等待3秒...",true);
+                new  DownloadCardTask().execute();
 
 
 
@@ -487,6 +508,79 @@ public class CardListViewActivity extends AppCompatActivity {
         cursor.close();
         Log.d("TAG_NAME", resultSet.toString() );
         return resultSet;
+    }
+
+
+    class  DownloadCardTask  extends AsyncTask<Void, Integer, Boolean> {
+
+        @Override
+        protected  void  onPreExecute() {
+            dialog.show();
+        }
+
+        @Override
+        protected  Boolean doInBackground(Void... params) {
+            try {
+
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url("http://waterdrop.tw/mobile/get_card_json/")
+                        .build();
+                Response responses = null;
+
+                try {
+                    responses = client.newCall(request).execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                String jsonData = responses.body().string();
+                Log.v(TAG,jsonData.toString());
+                JSONObject Jobject = new JSONObject(jsonData);
+                Log.v(TAG,Jobject.toString());
+                JSONArray Jarray = Jobject.getJSONArray("data");
+                cardDAO.deleteAll();
+                for (int i = 0; i < Jarray.length(); i++) {
+                    publishProgress(i);
+                    JSONObject object  = Jarray.getJSONObject(i);
+                    Log.v(TAG,object.toString());
+                    String card_id = object.get("card_id").toString();
+                    String word = object.get("word").toString();
+                    String depth = object.get("depth").toString();
+
+                    Card card0Item0  = new Card(0, new Date().getTime(),word, 0, Integer.parseInt(depth),Long.parseLong(card_id));
+
+
+                    cardDAO.insert(card0Item0);
+
+
+
+                    //Log.v(TAG,word);
+                }
+                cardIdList = new ArrayList<>();
+                cardIdList = cardDAO.getCardIdList();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
+        @Override
+        protected  void  onProgressUpdate(Integer... values) {
+            dialog.setMessage( "當前下載進度："  + values[ 0 ] +  "%" );
+        }
+
+        @Override
+        protected  void  onPostExecute(Boolean result) {
+            dialog.dismiss();
+            mCardAdapter.notifyDataSetChanged();
+            if  (result) {
+                Toast.makeText(getApplicationContext(),  "下載成功" , Toast.LENGTH_SHORT).show();
+            }  else  {
+                Toast.makeText(getApplicationContext(),  "下載失敗" , Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 }
