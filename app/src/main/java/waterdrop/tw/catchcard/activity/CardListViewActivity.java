@@ -55,6 +55,7 @@ public class CardListViewActivity extends AppCompatActivity {
     private ListView cardListView;
     private boolean selectedMenu = false;
     ProgressDialog dialog ;
+    private  FloatingActionButton fab;
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
 
@@ -109,34 +110,41 @@ public class CardListViewActivity extends AppCompatActivity {
 
     }
 
+    private void addItemMode()
+    {
+        selectedMenu = false;
+
+        fab.setImageResource(R.drawable.ic_new);
+        cardListView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+        cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+
+                Intent intent = new Intent();
+                intent.setClass(CardListViewActivity.this, MainActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("position", cardIdList.get(pos));
+                bundle.putString("action", "editCard");
+                intent.putExtras(bundle);
+                startActivity(intent);
+
+
+            }
+        });
+    }
+
     private void setSelectedMode()
     {
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addCardBtn);
+        fab = (FloatingActionButton) findViewById(R.id.addCardBtn);
         fab.setOnLongClickListener(new View.OnLongClickListener() {
 
             @Override
             public boolean onLongClick(View v) {
                 if (selectedMenu) {
-                    selectedMenu = false;
-
-                    fab.setImageResource(R.drawable.ic_new);
-                    cardListView.setChoiceMode(AbsListView.CHOICE_MODE_NONE);
-                    cardListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                        @Override
-                        public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
-
-                            Intent intent = new Intent();
-                            intent.setClass(CardListViewActivity.this, MainActivity.class);
-                            Bundle bundle = new Bundle();
-                            bundle.putInt("position", cardIdList.get(pos));
-                            bundle.putString("action", "editCard");
-                            intent.putExtras(bundle);
-                            startActivity(intent);
+                    addItemMode();
 
 
-                        }
-                    });
                 } else {
                     selectedMenu = true;
                     Snackbar.make(v, "進入多選刪除模式", Snackbar.LENGTH_LONG)
@@ -165,11 +173,14 @@ public class CardListViewActivity extends AppCompatActivity {
                                 Log.v(TAG, "getkey :" + array.get(key) + "");
                                 if (array.get(key)) {
                                     //view.setBackgroundColor(Color.parseColor("#BBDEFB"));
+                                    if(getView != null)
                                     getView.setBackgroundResource(R.color.colorListSelected);
+
                                     //del
                                     Log.v(TAG, "del" + key + " TRUE @ " + array.get(key));
                                 } else {
-                                    getView.setBackgroundColor(0);
+                                    if(getView != null)
+                                    getView.setBackgroundResource(0);
                                     //view.setBackgroundColor(Color.GREEN);
                                     Log.v(TAG, "del" + key + " FALSE @ " + array.get(key));
                                 }
@@ -177,8 +188,10 @@ public class CardListViewActivity extends AppCompatActivity {
                             }
 
 
+
                         }
                     });
+
                     mCardAdapter.notifyDataSetChanged();
                 }
 
@@ -305,6 +318,7 @@ public class CardListViewActivity extends AppCompatActivity {
                     }
 
                 }
+                list.clearChoices();
                 mCardAdapter.notifyDataSetChanged();
                 break;
 
@@ -314,22 +328,44 @@ public class CardListViewActivity extends AppCompatActivity {
                 SparseBooleanArray array2 = list.getCheckedItemPositions();
 
 
+
                 Log.v(TAG, "del_selected_btn" + array2.toString());
 
                 for (int i = 0; i < array2.size(); i++) {
+
                     int key = array2.keyAt(i);
-                    if (array2.get(key)) {
+                    if (array2.get(key) && cardListView.isItemChecked(key)) {
+                        //避免recycle view 變成不同顏色
+                        LinearLayout getView = (LinearLayout) cardListView.getChildAt(key);
+                        getView.setBackgroundResource(0);
+Log.v(TAG,cardIdList.get(key).toString());
                         cardDAO.removeAllByCardId(cardIdList.get(key));
+                        cardIdList.remove(key);
+
+
                     }
 
-
-
-
-
-
-
                 }
+                list.clearChoices();
+
+                List<Integer> tmpCardIDList = new ArrayList<>(cardIdList);
+
+                cardIdList.removeAll(tmpCardIDList);
+
+                Iterator caridListIterator = tmpCardIDList.iterator();
+                while(caridListIterator.hasNext()){
+                    final int cardID = (int) caridListIterator.next();
+                    cardIdList.add(cardID);
+                }
+
+
+
+
+
+                addItemMode();
+                list.requestLayout();
                 mCardAdapter.notifyDataSetChanged();
+                invalidateOptionsMenu();
 
 
                 break;
@@ -365,14 +401,14 @@ public class CardListViewActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return cardDAO.getTotalCountByCardId(0);
+            return cardIdList.size();
         }
 
         @Override
         public List<Card> getItem(int position) {
 
-
-            return cardDAO.getCard(cardIdList.get(position),0);
+            int i = cardIdList.get(position);
+            return cardDAO.getCard(i,0);
         }
 
         @Override
@@ -520,6 +556,15 @@ public class CardListViewActivity extends AppCompatActivity {
 
         @Override
         protected  Boolean doInBackground(Void... params) {
+            Iterator delCardId = cardDAO.getCardIdList().iterator();
+            while(delCardId.hasNext()){
+                final int card_id = (int) delCardId.next();
+                cardIdList.remove(card_id);
+            }
+
+
+
+            cardDAO.deleteAll();
             try {
 
                 OkHttpClient client = new OkHttpClient();
@@ -530,6 +575,10 @@ public class CardListViewActivity extends AppCompatActivity {
 
                 try {
                     responses = client.newCall(request).execute();
+                    if(! responses.isSuccessful())
+                    {
+                        return false;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -538,7 +587,7 @@ public class CardListViewActivity extends AppCompatActivity {
                 JSONObject Jobject = new JSONObject(jsonData);
                 Log.v(TAG,Jobject.toString());
                 JSONArray Jarray = Jobject.getJSONArray("data");
-                cardDAO.deleteAll();
+
                 for (int i = 0; i < Jarray.length(); i++) {
                     publishProgress(i);
                     JSONObject object  = Jarray.getJSONObject(i);
@@ -549,6 +598,7 @@ public class CardListViewActivity extends AppCompatActivity {
 
                     Card card0Item0  = new Card(0, new Date().getTime(),word, 0, Integer.parseInt(depth),Long.parseLong(card_id));
 
+                   //
 
                     cardDAO.insert(card0Item0);
 
@@ -556,8 +606,13 @@ public class CardListViewActivity extends AppCompatActivity {
 
                     //Log.v(TAG,word);
                 }
-                cardIdList = new ArrayList<>();
-                cardIdList = cardDAO.getCardIdList();
+                Iterator delCardId2 = cardDAO.getCardIdList().iterator();
+                while(delCardId2.hasNext()){
+                    final int card_id = (int) delCardId2.next();
+                    cardIdList.add(card_id);
+                }
+
+                Log.v(TAG,cardIdList.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
