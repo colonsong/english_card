@@ -132,8 +132,8 @@ public class CardDAO {
 
     public List<Integer> getCardIdList()
     {
-
-        List<Integer> result = new ArrayList<>();
+        int position = 0;
+        List<Integer> result = new ArrayList<>(30);
         // 使用編號為查詢條件
         String groupBy = CARDID_COLUMN;
         // 執行查詢
@@ -141,8 +141,7 @@ public class CardDAO {
                 TABLE_NAME, null, null, null, groupBy, null, null, null);
 
         while (cursor.moveToNext()) {
-            result.add( cursor.getInt(1));
-
+            result.add(position, cursor.getInt(1));
         }
 
         cursor.close();

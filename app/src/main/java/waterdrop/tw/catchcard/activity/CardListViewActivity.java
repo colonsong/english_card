@@ -83,6 +83,9 @@ public class CardListViewActivity extends AppCompatActivity {
             cardDAO.sample();
         }
         cardIdList = cardDAO.getCardIdList();
+
+
+
         //Stetho.initializeWithDefaults(this);
 
         mCardAdapter = new CardAdapter(this, R.layout.card_lsit_view_item, cardDAO,cardIdList);
@@ -327,20 +330,21 @@ public class CardListViewActivity extends AppCompatActivity {
 
                 SparseBooleanArray array2 = list.getCheckedItemPositions();
 
+                Log.v(TAG,cardIdList.toString());
 
 
                 Log.v(TAG, "del_selected_btn" + array2.toString());
 
                 for (int i = 0; i < array2.size(); i++) {
 
-                    int key = array2.keyAt(i);
-                    if (array2.get(key) && cardListView.isItemChecked(key)) {
+                    int position = array2.keyAt(i);
+                    if (array2.get(position) && cardListView.isItemChecked(position)) {
                         //避免recycle view 變成不同顏色
-                        LinearLayout getView = (LinearLayout) cardListView.getChildAt(key);
+                        LinearLayout getView = (LinearLayout) cardListView.getChildAt(position);
                         getView.setBackgroundResource(0);
-Log.v(TAG,cardIdList.get(key).toString());
-                        cardDAO.removeAllByCardId(cardIdList.get(key));
-                        cardIdList.remove(key);
+Log.v(TAG,cardIdList.get(position-1).toString());
+                        cardDAO.removeAllByCardId(cardIdList.get(position-1));
+                        cardIdList.remove(position-1);
 
 
                     }
@@ -407,8 +411,8 @@ Log.v(TAG,cardIdList.get(key).toString());
         @Override
         public List<Card> getItem(int position) {
 
-            int i = cardIdList.get(position);
-            return cardDAO.getCard(i,0);
+            int cardId = cardIdList.get(position);
+            return cardDAO.getCard(cardId,0);
         }
 
         @Override
@@ -559,7 +563,7 @@ Log.v(TAG,cardIdList.get(key).toString());
             Iterator delCardId = cardDAO.getCardIdList().iterator();
             while(delCardId.hasNext()){
                 final int card_id = (int) delCardId.next();
-                cardIdList.remove(card_id);
+                cardIdList.remove(cardIdList.indexOf(card_id));
             }
 
 
