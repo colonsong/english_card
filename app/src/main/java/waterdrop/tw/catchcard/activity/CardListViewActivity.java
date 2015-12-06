@@ -38,7 +38,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -176,20 +175,19 @@ public class CardListViewActivity extends AppCompatActivity {
                                 Log.v(TAG, "getkey :" + array.get(key) + "");
                                 if (array.get(key)) {
                                     //view.setBackgroundColor(Color.parseColor("#BBDEFB"));
-                                    if(getView != null)
-                                    getView.setBackgroundResource(R.color.colorListSelected);
+                                    if (getView != null)
+                                        getView.setBackgroundResource(R.color.colorListSelected);
 
                                     //del
                                     Log.v(TAG, "del" + key + " TRUE @ " + array.get(key));
                                 } else {
-                                    if(getView != null)
-                                    getView.setBackgroundResource(0);
+                                    if (getView != null)
+                                        getView.setBackgroundResource(0);
                                     //view.setBackgroundColor(Color.GREEN);
                                     Log.v(TAG, "del" + key + " FALSE @ " + array.get(key));
                                 }
 
                             }
-
 
 
                         }
@@ -334,7 +332,7 @@ public class CardListViewActivity extends AppCompatActivity {
 
 
                 Log.v(TAG, "del_selected_btn" + array2.toString());
-
+                int[] delcardId = new int[array2.size()];
                 for (int i = 0; i < array2.size(); i++) {
 
                     int position = array2.keyAt(i);
@@ -342,16 +340,23 @@ public class CardListViewActivity extends AppCompatActivity {
                         //避免recycle view 變成不同顏色
                         LinearLayout getView = (LinearLayout) cardListView.getChildAt(position);
                         getView.setBackgroundResource(0);
-Log.v(TAG,cardIdList.get(position-1).toString());
-                        cardDAO.removeAllByCardId(cardIdList.get(position-1));
-                        cardIdList.remove(position-1);
+Log.v(TAG, cardIdList.get(position).toString());
+                        cardDAO.removeAllByCardId(cardIdList.get(position));
+                        delcardId[i] = cardIdList.get(position);
+
 
 
                     }
 
                 }
+                for(int i = 0; i< delcardId.length; i ++)
+                {
+                    cardIdList.remove(cardIdList.indexOf(delcardId[i]));
+                }
+
                 list.clearChoices();
 
+                /*
                 List<Integer> tmpCardIDList = new ArrayList<>(cardIdList);
 
                 cardIdList.removeAll(tmpCardIDList);
@@ -361,7 +366,7 @@ Log.v(TAG,cardIdList.get(position-1).toString());
                     final int cardID = (int) caridListIterator.next();
                     cardIdList.add(cardID);
                 }
-
+                */
 
 
 
