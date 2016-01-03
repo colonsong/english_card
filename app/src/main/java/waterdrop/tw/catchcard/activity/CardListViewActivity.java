@@ -222,6 +222,14 @@ public class CardListViewActivity extends AppCompatActivity {
                 .build();
         Response response = client.newCall(request).execute();
        // Log.v(TAG,response.body().string());
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), "上傳成功", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         return response.body().string();
     }
@@ -607,7 +615,9 @@ public class CardListViewActivity extends AppCompatActivity {
                     cardIdList.add(card_id);
                 }
 
-                Log.v(TAG,cardIdList.toString());
+                Log.v(TAG, cardIdList.toString());
+
+
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
