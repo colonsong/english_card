@@ -5,5 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="colorListSelected">#FF1744</color>
     <color name="colorListDefault">#FFFFFF</color>
-
+    <!-- the background color used for unread conversation -->
+    <color name="unread_bgcolor">#FFFFFF</color>
+    <color name="read_bgcolor">#FF11FF</color>
 </resources>

@@ -12,5 +12,6 @@
         android:padding="10dp"
         android:checkMark="@drawable/ic_done"
         android:id="@+id/cardTextView"
+        android:background="@color/unread_bgcolor"
         android:layout_gravity="center_horizontal"/>
 </LinearLayout>

@@ -160,40 +160,11 @@ public class CardListViewActivity extends AppCompatActivity {
                         public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
 
 
-                            AbsListView list = (AbsListView) adapterView;
-
-                            SparseBooleanArray array = list.getCheckedItemPositions();
-
-
-                            Log.v(TAG, array.toString());
-
-
-                            for (int i = 0; i < array.size(); i++) {
-                                int key = array.keyAt(i);
-                                Log.v(TAG, "key: " + key);
-                                View getView = (View) cardListView.getChildAt(key);
-                                Log.v(TAG, "getkey :" + array.get(key) + "");
-                                if (array.get(key)) {
-                                    //view.setBackgroundColor(Color.parseColor("#BBDEFB"));
-                                    if (getView != null)
-                                        getView.setBackgroundResource(R.color.colorListSelected);
-
-                                    //del
-                                    Log.v(TAG, "del" + key + " TRUE @ " + array.get(key));
-                                } else {
-                                    if (getView != null)
-                                        getView.setBackgroundResource(0);
-                                    //view.setBackgroundColor(Color.GREEN);
-                                    Log.v(TAG, "del" + key + " FALSE @ " + array.get(key));
-                                }
-
-                            }
-
-
+                            mCardAdapter.notifyDataSetChanged();
                         }
                     });
 
-                    mCardAdapter.notifyDataSetChanged();
+
                 }
 
                 invalidateOptionsMenu();
@@ -297,32 +268,27 @@ public class CardListViewActivity extends AppCompatActivity {
 
                 break;
             case R.id.cancel_selected_btn:
-
-
-
                 SparseBooleanArray array = list.getCheckedItemPositions();
-
-
                 Log.v(TAG, "cancel_selected_btn: " + array.toString());
-
                 for (int i = 0; i < array.size(); i++) {
-                    int key = array.keyAt(i);
+                    int position = array.keyAt(i);
+                    Log.v( TAG," GET " + i +  ":" +   array.get(i) );
+                    Log.v( TAG," keyat " + i +  ":" +   array.keyAt(i) );
+                    Log.v( TAG," vlaueat " + i +  ":" +   array.valueAt(i) );
 
-                    LinearLayout getView = (LinearLayout) cardListView.getChildAt(key);
+                    Log.v(TAG, " position " + position);
+                    LinearLayout getView = (LinearLayout) cardListView.getChildAt(position);
 
-                    if (array.get(key)) {
-
-                        list.setItemChecked(key,false);
-
-                        getView.setBackgroundResource(0);
-
-                    }
+                    getView.setBackgroundResource(R.color.unread_bgcolor);
 
                 }
-                list.clearChoices();
+                if(list != null)
+                {
+                    list.clearChoices();
+                }
+
                 mCardAdapter.notifyDataSetChanged();
                 break;
-
             case R.id.del_selected_btn:
 
 
@@ -339,7 +305,7 @@ public class CardListViewActivity extends AppCompatActivity {
                     if (array2.get(position) && cardListView.isItemChecked(position)) {
                         //避免recycle view 變成不同顏色
                         LinearLayout getView = (LinearLayout) cardListView.getChildAt(position);
-                        getView.setBackgroundResource(0);
+                        getView.setBackgroundResource(R.color.unread_bgcolor);
 Log.v(TAG, cardIdList.get(position).toString());
                         cardDAO.removeAllByCardId(cardIdList.get(position));
                         delcardId[i] = cardIdList.get(position);
@@ -417,7 +383,7 @@ Log.v(TAG, cardIdList.get(position).toString());
         public List<Card> getItem(int position) {
 
             int cardId = cardIdList.get(position);
-            return cardDAO.getCard(cardId,0);
+            return cardDAO.getCard(cardId, 0);
         }
 
         @Override
@@ -437,20 +403,20 @@ Log.v(TAG, cardIdList.get(position).toString());
                  itemLayout =  (LinearLayout) mInflater.inflate(R.layout.card_lsit_view_item, parent, false);
 
 
+
             }
             else {
                 itemLayout = (LinearLayout) convertView;
             }
 
             TextView itemText = (TextView) itemLayout.findViewById(R.id.cardTextView);
-
+            updateBackground(position , itemText);
             Iterator<Card> iterator = cards.iterator();
             String wordStr = "";
             while (iterator.hasNext()) {
                 Card card = iterator.next();
 
                 wordStr = wordStr + "、"  + card.getWord();
-
 
 
 
@@ -464,6 +430,15 @@ Log.v(TAG, cardIdList.get(position).toString());
 
 
             return itemLayout;
+        }
+        public void updateBackground(int position, View view) {
+            if (cardListView.isItemChecked(position)) {
+                view.setBackgroundResource(R.color.colorListSelected);
+                Log.v(TAG, position + "  1111111111111");
+            } else {
+                view.setBackgroundResource(R.color.unread_bgcolor );
+                Log.v(TAG, position + "   22222222222");
+            }
         }
 
 
