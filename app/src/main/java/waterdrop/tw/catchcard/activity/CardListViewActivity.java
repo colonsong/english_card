@@ -40,6 +40,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import recyclerview.android.com.myapplication.R;
@@ -298,29 +299,38 @@ public class CardListViewActivity extends AppCompatActivity {
 
 
                 Log.v(TAG, "del_selected_btn" + array2.toString());
-                int[] delcardId = new int[array2.size()];
+
+                Log.v(TAG,cardIdList.toString());
+                LinkedList cardIdLinkList = new LinkedList();
                 for (int i = 0; i < array2.size(); i++) {
 
                     int position = array2.keyAt(i);
-                    if (array2.get(position) && cardListView.isItemChecked(position)) {
+                    if (array2.get(position)) {
                         //避免recycle view 變成不同顏色
-                        LinearLayout getView = (LinearLayout) cardListView.getChildAt(position);
-                        getView.setBackgroundResource(R.color.unread_bgcolor);
-Log.v(TAG, cardIdList.get(position).toString());
-                        cardDAO.removeAllByCardId(cardIdList.get(position));
-                        delcardId[i] = cardIdList.get(position);
+
+                       //從cardIdList 取的該position的cardId是多少
+                        int carId = cardIdList.get(position);
+                        cardIdLinkList.add(carId);
+                        //刪除DB BY CARDID
+                        cardDAO.removeAllByCardId(carId);
+
 
 
 
                     }
 
                 }
-                for(int i = 0; i< delcardId.length; i ++)
+                for(Iterator iter = cardIdLinkList.iterator(); iter.hasNext();)
                 {
-                    cardIdList.remove(cardIdList.indexOf(delcardId[i]));
+                    cardIdList.remove(cardIdList.indexOf(iter.next()));
                 }
 
-                list.clearChoices();
+                Log.v(TAG,cardIdList.toString());
+                if(list != null)
+                {
+                    list.clearChoices();
+                }
+
 
                 /*
                 List<Integer> tmpCardIDList = new ArrayList<>(cardIdList);
@@ -376,6 +386,7 @@ Log.v(TAG, cardIdList.get(position).toString());
 
         @Override
         public int getCount() {
+            Log.v(TAG,"size" + cardIdList.size());
             return cardIdList.size();
         }
 
