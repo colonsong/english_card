@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import recyclerview.android.com.myapplication.R;
 import waterdrop.tw.catchcard.activity.CardListViewActivity;
 import waterdrop.tw.catchcard.sql.Card;
 import waterdrop.tw.catchcard.sql.CardDAO;
@@ -73,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         initView();
+
 
     }
 

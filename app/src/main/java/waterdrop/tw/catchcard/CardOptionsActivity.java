@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 
-import recyclerview.android.com.myapplication.R;
-
 /**
  * Created by colon on 2015/10/30.
  */

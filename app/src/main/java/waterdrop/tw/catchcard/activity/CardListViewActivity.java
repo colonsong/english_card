@@ -43,8 +43,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import recyclerview.android.com.myapplication.R;
 import waterdrop.tw.catchcard.MainActivity;
+import waterdrop.tw.catchcard.R;
+import waterdrop.tw.catchcard.service.ScreenOnCardService;
 import waterdrop.tw.catchcard.sql.Card;
 import waterdrop.tw.catchcard.sql.CardDAO;
 
@@ -110,6 +111,9 @@ public class CardListViewActivity extends AppCompatActivity {
 
             }
         });
+
+        Log.d(TAG, "ARTICLE_SERVICE START");
+        startService(new Intent(this, ScreenOnCardService.class));
 
     }
 
